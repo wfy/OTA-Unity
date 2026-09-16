@@ -21,12 +21,12 @@ Shader "UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel"
 			#pragma fragment frag
 			#include "UnityCG.cginc"
 
-			StructuredBuffer<half3> buf_Points;
+			StructuredBuffer<float3> buf_Points;
 			StructuredBuffer<fixed4> buf_Colors;
 			uniform float4x4 _modelMatrix;
 
 			struct ps_input {
-				half4 pos : SV_POSITION;
+				float4 pos : SV_POSITION;
 				fixed4 color : COLOR;
 			};
 
@@ -36,10 +36,9 @@ Shader "UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel"
 			ps_input vert(uint id : SV_VertexID, uint inst : SV_InstanceID)
 			{
 				ps_input o;
-				//half3 worldPos = buf_Points[id];
 
-				half3 worldPos = mul(_modelMatrix, float4(buf_Points[id], 1)).xyz;
-				o.pos = mul(UNITY_MATRIX_VP, half4(worldPos,1.0f));
+				float3 worldPos = mul(_modelMatrix, float4(buf_Points[id], 1.0f)).xyz;
+				o.pos = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0f));
 
 
 				o.color = buf_Colors[id] * (1 - _UseTintColor) + _Tint * _UseTintColor;

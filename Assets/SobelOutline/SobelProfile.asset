@@ -34,16 +34,16 @@ MonoBehaviour:
     overrideState: 1
     value: 1.8
   depthMultiplier:
-    overrideState: 1
+    overrideState: 0
     value: 2
   depthBias:
-    overrideState: 1
+    overrideState: 0
     value: 6
   normalMultiplier:
-    overrideState: 1
+    overrideState: 0
     value: 1
   normalBias:
-    overrideState: 1
+    overrideState: 0
     value: 10
   color:
     overrideState: 1

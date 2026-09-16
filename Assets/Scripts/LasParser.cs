@@ -24,6 +24,7 @@ namespace OTA.Framework
             public bool hasColor;
             public bool hasIntensity;
             public double minX, minY, minZ, maxX, maxY, maxZ;
+            public double centerX, centerY, centerZ;
             public string error;
         }
 
@@ -100,6 +101,12 @@ namespace OTA.Framework
                     double minZ = reader.ReadDouble();
                     result.minX = minX; result.minY = minY; result.minZ = minZ;
                     result.maxX = maxX; result.maxY = maxY; result.maxZ = maxZ;
+                    double cx = (minX + maxX) * 0.5;
+                    double cy = (minY + maxY) * 0.5;
+                    double cz = (minZ + maxZ) * 0.5;
+                    result.centerX = cx;
+                    result.centerY = cy;
+                    result.centerZ = cz;
 
                     if (pointCount <= 0 || pointCount > 100_000_000)
                     {
@@ -159,9 +166,13 @@ namespace OTA.Framework
                     {
                         reader.Read(pointBytes, 0, recordLen);
                         int idx = (int)(i * 3);
-                        positions[idx]     = (float)(BitConverter.ToInt32(pointBytes, 0) * scaleX + offsetX);
-                        positions[idx + 1] = (float)(BitConverter.ToInt32(pointBytes, 4) * scaleY + offsetY);
-                        positions[idx + 2] = (float)(BitConverter.ToInt32(pointBytes, 8) * scaleZ + offsetZ);
+                        double gx = BitConverter.ToInt32(pointBytes, 0) * scaleX + offsetX;
+                        double gy = BitConverter.ToInt32(pointBytes, 4) * scaleY + offsetY;
+                        double gz = BitConverter.ToInt32(pointBytes, 8) * scaleZ + offsetZ;
+
+                        positions[idx]     = (float)(gx - cx);
+                        positions[idx + 1] = (float)(gy - cy);
+                        positions[idx + 2] = (float)(gz - cz);
 
                         classes[i] = (byte)(pointBytes[15] & 0x1F);
                         returnNumbers[i] = (byte)(pointBytes[14] & 0x07);

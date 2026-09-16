@@ -112,8 +112,8 @@ namespace OTA.Corridor
         public void InitFromLasData(ref LasParser.LasPointData data, Vector3 centerOffset)
         {
             pointCount = data.count;
-            minElevation = (float)data.minZ;
-            maxElevation = (float)data.maxZ;
+            minElevation = (float)(data.minZ - data.centerZ);
+            maxElevation = (float)(data.maxZ - data.centerZ);
             if (Mathf.Approximately(minElevation, maxElevation))
             {
                 maxElevation = minElevation + 1f;

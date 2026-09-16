@@ -115,9 +115,9 @@ namespace OTA
                       ", classes: " + (data.classes != null ? "yes" : "no"));
 
             Vector3 center = new Vector3(
-                (float)((data.minX + data.maxX) * 0.5),
-                (float)((data.minY + data.maxY) * 0.5),
-                (float)((data.minZ + data.maxZ) * 0.5));
+                (float)data.centerX,
+                (float)data.centerY,
+                (float)data.centerZ);
 
             int count = data.count;
             Vector3[] pts = new Vector3[count];
@@ -127,9 +127,9 @@ namespace OTA
             for (int i = 0; i < count; i++)
             {
                 int p = i * 3;
-                float lx = data.positions[p] - center.x;
-                float ly = data.positions[p + 1] - center.y;
-                float lz = data.positions[p + 2] - center.z;
+                float lx = data.positions[p];
+                float ly = data.positions[p + 1];
+                float lz = data.positions[p + 2];
                 pts[i] = new Vector3(lx, lz, ly); // flipYZ
                 cols[i] = hasColor
                     ? new Vector4(data.colors[p], data.colors[p + 1], data.colors[p + 2], 1f)
@@ -148,7 +148,9 @@ namespace OTA
 
                 if (colorManager != null)
                 {
-                    colorManager.InitFromArrays(pts, cols, dataCopy.classes, dataCopy.intensities, (float)dataCopy.minZ, (float)dataCopy.maxZ);
+                    float relMinZ = (float)(dataCopy.minZ - dataCopy.centerZ);
+                    float relMaxZ = (float)(dataCopy.maxZ - dataCopy.centerZ);
+                    colorManager.InitFromArrays(pts, cols, dataCopy.classes, dataCopy.intensities, relMinZ, relMaxZ);
                 }
 
                 currentLoadedFile = fullPath;

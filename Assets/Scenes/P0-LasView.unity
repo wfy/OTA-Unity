@@ -179,7 +179,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.05
-  far clip plane: 2000
+  far clip plane: 10000
   field of view: 50
   orthographic: 0
   orthographic size: 5
@@ -225,7 +225,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
@@ -233,10 +233,10 @@ MonoBehaviour:
   volumeTrigger: {fileID: 100001}
   volumeLayer:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 4096
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 0
-  antialiasingMode: 0
+  antialiasingMode: 1
   temporalAntialiasing:
     jitterSpread: 0.75
     sharpness: 0.25
@@ -293,11 +293,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
-  thickness: 1.8
-  depthMultiplier: 2
-  depthBias: 6
-  normalMultiplier: 1
-  normalBias: 10
+  thickness: 2
+  depthMultiplier: 0.1
+  depthBias: 0.1
+  normalMultiplier: 0.1
+  normalBias: 0.1
   outlineColor: {r: 0, g: 0, b: 0, a: 0.85}
 --- !u!1 &200000
 GameObject:
@@ -440,7 +440,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fullPath: 
   loadAtStart: 0
-  cloudMaterial: {fileID: 2100000, guid: 78c038bb125c6054db8d80c39791c25c, type: 2}
+  cloudMaterial: {fileID: 2100000, guid: 6c14ee25a48f37243ac91f1cacd8bcb7, type: 2}
   useDX11: 1
   meshMaterial: {fileID: 2100000, guid: 78c038bb125c6054db8d80c39791c25c, type: 2}
   currentRenderMode: 0
@@ -487,7 +487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead011436a6a9dc498b6c74debf28506, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lasPath: "E:/unity/\u70B9\u4E91/17-18(17_18).las"
+  lasPath: 
   threaded: 1
   autoLoadOnStart: 0
 --- !u!114 &300004
@@ -762,7 +762,7 @@ MonoBehaviour:
   sharedProfile: {fileID: 11400000, guid: 6f8e21a0d3329fa4394982631ceaa001, type: 2}
   isGlobal: 1
   blendDistance: 0
-  weight: 1
+  weight: 0.2
   priority: 1
 --- !u!1 &211507785
 GameObject:

@@ -33,7 +33,7 @@ Shader "OTA/CorridorPointCloudDX11"
             #pragma geometry GS_Main
             #include "UnityCG.cginc"
 
-            StructuredBuffer<half3> buf_Points;
+            StructuredBuffer<float3> buf_Points;
             StructuredBuffer<fixed4> buf_Colors;
             uniform float4x4 _modelMatrix;
 
