@@ -28,11 +28,17 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Brightness: 1.05
+    - _Contrast: 1.1
     - _CycleRange: 50
-    - _MaxDistance: 1000
-    - _MaxPixel: 25
+    - _EDLRadius: 2
+    - _EDLStrength: 0.4
+    - _Gamma: 1
+    - _MaxDistance: 1500
+    - _MaxPixel: 12
     - _OriginColor: 1
     - _OverrideColor: 0
+    - _Saturation: 0.9
     - _Visible: 15
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

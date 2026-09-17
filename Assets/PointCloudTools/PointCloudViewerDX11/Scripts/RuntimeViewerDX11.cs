@@ -1112,7 +1112,7 @@ namespace PointCloudRuntimeViewer
 
         public void InitDX11Buffers()
         {
-            EnsureCloudMaterial();
+            // EnsureCloudMaterial();
             if (totalPoints == 0)
             {
                 totalPoints = 1;
@@ -1196,20 +1196,28 @@ namespace PointCloudRuntimeViewer
             if (cloudMaterial == null || bufferPoints == null) return;
             if (Camera.current == null) return;
 
-            // Restrict point rendering strictly to primary view cameras (Game View RightPointCloud / MainCamera)
-            // Filtering out SceneView, internal DepthNormals, and secondary passes avoids 4x~6x overdraw and GPU stalls
-            if (!Camera.current.CompareTag("RightPointCloud") &&
-                !Camera.current.CompareTag("MainCamera") &&
-                !Camera.current.CompareTag("RightPntDepthCamera"))
+            // Restrict point rendering strictly to primary view cameras (Game View RightPointCloud / MainCamera) and SceneView
+            bool isTargetCamera = Camera.current.CompareTag("RightPointCloud") ||
+                                  Camera.current.CompareTag("MainCamera") ||
+                                  Camera.current == Camera.main ||
+                                  (cam != null && Camera.current == cam) ||
+                                  (Camera.current.cameraType == CameraType.SceneView);
+
+            if (!isTargetCamera && !Camera.current.CompareTag("RightPntDepthCamera"))
                 return;
 
             if (Camera.current.CompareTag("RightPntDepthCamera"))
             {
                 if (depthMaterial != null) depthMaterial.SetPass(0);
-                else cloudMaterial.SetPass(0);
+                else
+                {
+                    cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+                    cloudMaterial.SetPass(0);
+                }
             }
             else
             {
+                cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
                 cloudMaterial.SetPass(0);
             }
 
@@ -1567,27 +1575,55 @@ namespace PointCloudRuntimeViewer
 
         public void EnsureCloudMaterial()
         {
-            if (cloudMaterial == null || cloudMaterial.shader == null || (currentRenderMode == RenderMode.Point && cloudMaterial.shader.name != "UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel"))
+            bool hasValidShader = cloudMaterial != null && cloudMaterial.shader != null &&
+                (cloudMaterial.shader.name == "UnityCoder/PointCloud/DX11/PointCloudColorDx11-CloudCompare" ||
+                 cloudMaterial.shader.name == "UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel");
+
+            if (cloudMaterial == null || !hasValidShader)
             {
-                var mat = Resources.Load<Material>("PointCloudColorDx11-Pixel");
+                var mat = Resources.Load<Material>("PointCloudColorDx11-CloudCompare");
+                if (mat == null) mat = Resources.Load<Material>("PointCloudColorDx11-Pixel");
+
                 if (mat != null)
                 {
                     cloudMaterial = new Material(mat);
                 }
                 else
                 {
-                    var s = Shader.Find("UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel");
+                    var s = Shader.Find("UnityCoder/PointCloud/DX11/PointCloudColorDx11-CloudCompare");
+                    if (s == null) s = Shader.Find("UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel");
                     if (s != null)
                     {
-                        cloudMaterial = new Material(s) { name = "PointCloudColorDx11_Pixel" };
+                        cloudMaterial = new Material(s) { name = "PointCloudColorDx11_CloudCompare" };
                     }
                 }
+            }
 
-                if (cloudMaterial != null)
+            if (cloudMaterial != null)
+            {
+                if (bufferPoints != null) cloudMaterial.SetBuffer("buf_Points", bufferPoints);
+                if (bufferColors != null) cloudMaterial.SetBuffer("buf_Colors", bufferColors);
+                cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+            }
+        }
+
+        public void EnsureMeshMaterial()
+        {
+            if (meshMaterial == null || meshMaterial.shader == null ||
+                meshMaterial.shader.name != "Unlit/WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new")
+            {
+                var mat = Resources.Load<Material>("WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new");
+                if (mat != null)
                 {
-                    if (bufferPoints != null) cloudMaterial.SetBuffer("buf_Points", bufferPoints);
-                    if (bufferColors != null) cloudMaterial.SetBuffer("buf_Colors", bufferColors);
-                    cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+                    meshMaterial = new Material(mat);
+                }
+                else
+                {
+                    var s = Shader.Find("Unlit/WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new");
+                    if (s != null)
+                    {
+                        meshMaterial = new Material(s) { name = "PointCloudAutoSize_new" };
+                    }
                 }
             }
         }
@@ -1685,21 +1721,10 @@ namespace PointCloudRuntimeViewer
             {
                 // 开启线框模式：使用 Unity Mesh 拓扑 + MeshRenderer + WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new
                 EnsureMeshGeometryAndColors();
-
-                if (meshMaterial == null)
-                {
-                    meshMaterial = Resources.Load<Material>("WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new");
-                    if (meshMaterial == null)
-                    {
-                        var s = Shader.Find("Unlit/WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new");
-                        if (s != null) meshMaterial = new Material(s);
-                    }
-                }
+                EnsureMeshMaterial();
 
                 if (meshMaterial != null)
                 {
-                    meshMaterial.SetInt("_MaxPixel", 25);
-                    meshMaterial.SetInt("_OriginColor", 1);
                     _mr.sharedMaterial = meshMaterial;
                 }
 
@@ -1718,20 +1743,7 @@ namespace PointCloudRuntimeViewer
                 if (_mr != null && _mr.enabled) _mr.enabled = false;
                 UpdateOutlineState(false);
 
-                var mat = Resources.Load<Material>("PointCloudColorDx11-Pixel");
-                if (mat != null)
-                {
-                    cloudMaterial = new Material(mat);
-                }
-                else
-                {
-                    var s = Shader.Find("UnityCoder/PointCloud/DX11/PointCloudColorDx11-Pixel");
-                    if (s != null)
-                    {
-                        cloudMaterial = new Material(s) { name = "PointCloudColorDx11_Pixel" };
-                    }
-                }
-
+                EnsureCloudMaterial();
                 InitDX11Buffers();
             }
         }
@@ -1746,14 +1758,14 @@ namespace PointCloudRuntimeViewer
                 {
                     layer.enabled = enable;
                 }
-                var controller = targetCam.GetComponent<OTA.Corridor.Overlays.SobelOutlineController>();
-                if (controller == null) controller = FindObjectOfType<OTA.Corridor.Overlays.SobelOutlineController>();
-                if (controller == null && enable) controller = targetCam.gameObject.AddComponent<OTA.Corridor.Overlays.SobelOutlineController>();
-                if (controller != null)
-                {
-                    controller.outlineEnabled = enable;
-                    controller.ApplyOutlineState();
-                }
+                // var controller = targetCam.GetComponent<OTA.Corridor.Overlays.SobelOutlineController>();
+                // if (controller == null) controller = FindObjectOfType<OTA.Corridor.Overlays.SobelOutlineController>();
+                // if (controller == null && enable) controller = targetCam.gameObject.AddComponent<OTA.Corridor.Overlays.SobelOutlineController>();
+                // if (controller != null)
+                // {
+                //     controller.outlineEnabled = enable;
+                //     controller.ApplyOutlineState();
+                // }
             }
 
             // If disabling outline, ensure all PostProcessLayers and Volumes across scene are strictly silenced to prevent Depth/Normals pre-passes

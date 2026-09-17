@@ -186,7 +186,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 512
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -236,7 +236,7 @@ MonoBehaviour:
     m_Bits: 4096
   stopNaNPropagation: 1
   finalBlitToCameraTarget: 0
-  antialiasingMode: 1
+  antialiasingMode: 2
   temporalAntialiasing:
     jitterSpread: 0.75
     sharpness: 0.25
@@ -287,17 +287,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 08c4bf1ad60913b43aa9e0b978ca9fa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   outlineEnabled: 0
   thickness: 2
-  depthMultiplier: 0.1
-  depthBias: 0.1
-  normalMultiplier: 0.1
-  normalBias: 0.1
+  depthMultiplier: 0
+  depthBias: 0
+  normalMultiplier: 0
+  normalBias: 0
   outlineColor: {r: 0, g: 0, b: 0, a: 0.85}
 --- !u!1 &200000
 GameObject:
@@ -323,13 +323,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200000}
-  m_LocalRotation: {x: 0.3975232, y: 0.2981424, z: -0.1987616, w: 0.8447368}
+  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 50, y: 30, z: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!108 &200002
 Light:
   m_ObjectHideFlags: 0
@@ -405,7 +405,7 @@ GameObject:
   - component: {fileID: 300004}
   - component: {fileID: 300005}
   - component: {fileID: 300006}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PointCloudViewer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -440,7 +440,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fullPath: 
   loadAtStart: 0
-  cloudMaterial: {fileID: 2100000, guid: 6c14ee25a48f37243ac91f1cacd8bcb7, type: 2}
+  cloudMaterial: {fileID: 2100000, guid: d2f6e8b9a0c1432eb74189b0d3e2f456, type: 2}
   useDX11: 1
   meshMaterial: {fileID: 2100000, guid: 78c038bb125c6054db8d80c39791c25c, type: 2}
   currentRenderMode: 0
@@ -450,7 +450,7 @@ MonoBehaviour:
   pointColors: []
   pointCloudFormat: 0
   readRGB: 1
-  readIntensity: 0
+  readIntensity: 1
   displayPoints: 1
   renderOnlyMainCam: 0
   cloudBounds:
@@ -461,20 +461,20 @@ MonoBehaviour:
   forceDepthBufferPass: 0
   depthMaterial: {fileID: 0}
   camDepthPass: 1
-  enablePicking: 0
+  enablePicking: 1
   useUnitScale: 0
-  unitScale: 0.001
+  unitScale: 1
   flipYZ: 1
   autoOffsetNearZero: 1
   useManualOffset: 0
   manualOffset: {x: 0, y: 0, z: 0}
   plyHasNormals: 0
   showDebug: 0
-  cam: {fileID: 0}
-  cacheBinFile: 1
+  cam: {fileID: 100002}
+  cacheBinFile: 0
   overrideExistingCacheFile: 0
   needCollsion: 0
-  needRecalculateCollision: 1
+  needRecalculateCollision: 0
 --- !u!114 &300003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,7 +487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead011436a6a9dc498b6c74debf28506, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lasPath: 
+  lasPath: "E:/unity/\u70B9\u4E91/17-18(17_18).las"
   threaded: 1
   autoLoadOnStart: 0
 --- !u!114 &300004
@@ -726,8 +726,8 @@ GameObject:
   m_Component:
   - component: {fileID: 500001}
   - component: {fileID: 500002}
-  m_Layer: 0
-  m_Name: GlobalPostProcessVolume
+  m_Layer: 12
+  m_Name: PostRender
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -759,11 +759,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sharedProfile: {fileID: 11400000, guid: 6f8e21a0d3329fa4394982631ceaa001, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 71691b15461a37446966ba22d7a9333e, type: 2}
   isGlobal: 1
   blendDistance: 0
-  weight: 0.2
-  priority: 1
+  weight: 1
+  priority: 0
 --- !u!1 &211507785
 GameObject:
   m_ObjectHideFlags: 0

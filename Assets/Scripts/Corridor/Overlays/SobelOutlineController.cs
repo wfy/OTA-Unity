@@ -63,24 +63,24 @@ namespace OTA.Corridor.Overlays
                 }
             }
 
-            if (volume != null)
-            {
-                volume.weight = outlineEnabled ? 1f : 0f;
-            }
+            // if (volume != null)
+            // {
+            //     volume.weight = outlineEnabled ? 0.2f : 0f;
+            // }
 
-            if (outlineEffect != null)
-            {
-                outlineEffect.enabled.Override(outlineEnabled);
-                if (outlineEnabled)
-                {
-                    outlineEffect.thickness.Override(thickness);
-                    outlineEffect.depthMultiplier.Override(depthMultiplier);
-                    outlineEffect.depthBias.Override(depthBias);
-                    outlineEffect.normalMultiplier.Override(normalMultiplier);
-                    outlineEffect.normalBias.Override(normalBias);
-                    outlineEffect.color.Override(outlineColor);
-                }
-            }
+            // if (outlineEffect != null)
+            // {
+            //     outlineEffect.enabled.Override(outlineEnabled);
+            //     if (outlineEnabled)
+            //     {
+            //         outlineEffect.thickness.Override(thickness);
+            //         outlineEffect.depthMultiplier.Override(depthMultiplier);
+            //         outlineEffect.depthBias.Override(depthBias);
+            //         outlineEffect.normalMultiplier.Override(normalMultiplier);
+            //         outlineEffect.normalBias.Override(normalBias);
+            //         outlineEffect.color.Override(outlineColor);
+            //     }
+            // }
         }
 
         /// <summary>

@@ -73,8 +73,8 @@ namespace OTA.EditorTools
             var volume = ppGo.GetComponent<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
             if (volume == null) volume = ppGo.AddComponent<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
             volume.isGlobal = true;
-            volume.priority = 1f;
-            volume.weight = 0f; // 默认权重 0
+            volume.priority = 0f;
+            volume.weight = 1f; // 默认权重 0
 
             string profilePath = "Assets/SobelOutline/SobelProfile.asset";
             var profile = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.PostProcessing.PostProcessProfile>(profilePath);
