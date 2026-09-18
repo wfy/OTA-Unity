@@ -32,19 +32,31 @@ MonoBehaviour:
     value: 1
   thickness:
     overrideState: 1
-    value: 2
+    value: 1
   depthMultiplier:
     overrideState: 0
-    value: 1
+    value: 0
   depthBias:
     overrideState: 0
-    value: 1
+    value: 0
   normalMultiplier:
     overrideState: 0
-    value: 1
+    value: 0
   normalBias:
     overrideState: 0
-    value: 10
+    value: 0
+  maxDistance:
+    overrideState: 1
+    value: 100
+  distanceFade:
+    overrideState: 1
+    value: 5
+  maxOrthoSize:
+    overrideState: 1
+    value: 45
+  orthoSizeFade:
+    overrideState: 1
+    value: 15
   color:
     overrideState: 0
     value: {r: 0, g: 0, b: 0, a: 1}

@@ -15,23 +15,40 @@ namespace OTA.Corridor.Overlays
         public bool outlineEnabled = false;
 
         [Header("轮廓粗细与权重")]
-        [Range(0.1f, 5.0f)]
-        public float thickness = 1.8f;
+        [Range(0f, 5.0f)]
+        public float thickness = 1.0f;
 
-        [Range(0.1f, 10.0f)]
+        [Range(0f, 10.0f)]
         public float depthMultiplier = 2.0f;
 
-        [Range(0.1f, 15.0f)]
-        public float depthBias = 8.0f;
+        [Range(0f, 15.0f)]
+        public float depthBias = 10.0f;
 
-        [Range(0.1f, 10.0f)]
+        [Range(0f, 10.0f)]
         public float normalMultiplier = 1.0f;
 
-        [Range(0.1f, 20.0f)]
+        [Range(0f, 20.0f)]
         public float normalBias = 10.0f;
 
         [Header("轮廓颜色")]
         public Color outlineColor = Color.black;
+
+        [Header("描边距离与正交范围控制")]
+        [Tooltip("透视模式下描边最大生效距离（米）")]
+        [Range(1.0f, 500.0f)]
+        public float maxDistance = 45.0f;
+
+        [Tooltip("透视模式下描边淡出过渡距离（米）")]
+        [Range(0.5f, 100.0f)]
+        public float distanceFade = 15.0f;
+
+        [Tooltip("正交模式下描边最大有效正交尺寸 (orthoSize)")]
+        [Range(1.0f, 500.0f)]
+        public float maxOrthoSize = 45.0f;
+
+        [Tooltip("正交模式下描边淡出过渡尺寸")]
+        [Range(0.5f, 100.0f)]
+        public float orthoSizeFade = 15.0f;
 
         private PostProcessVolume volume;
         private SobelOutline outlineEffect;
@@ -52,6 +69,11 @@ namespace OTA.Corridor.Overlays
         public void ApplyOutlineState()
         {
             _prevOutlineEnabled = outlineEnabled;
+            if (volume == null || outlineEffect == null)
+            {
+                SetupPostProcessing();
+            }
+
             var cam = GetComponent<Camera>();
             if (cam == null) cam = CameraHelper.MainCamera;
             if (cam != null)
@@ -63,24 +85,44 @@ namespace OTA.Corridor.Overlays
                 }
             }
 
-            // if (volume != null)
-            // {
-            //     volume.weight = outlineEnabled ? 0.2f : 0f;
-            // }
+            if (volume != null)
+            {
+                volume.weight = outlineEnabled ? 1f : 0f;
+            }
 
-            // if (outlineEffect != null)
-            // {
-            //     outlineEffect.enabled.Override(outlineEnabled);
-            //     if (outlineEnabled)
-            //     {
-            //         outlineEffect.thickness.Override(thickness);
-            //         outlineEffect.depthMultiplier.Override(depthMultiplier);
-            //         outlineEffect.depthBias.Override(depthBias);
-            //         outlineEffect.normalMultiplier.Override(normalMultiplier);
-            //         outlineEffect.normalBias.Override(normalBias);
-            //         outlineEffect.color.Override(outlineColor);
-            //     }
-            // }
+            if (outlineEffect != null)
+            {
+                outlineEffect.enabled.Override(outlineEnabled);
+                if (outlineEnabled)
+                {
+                    SyncEffectParameters();
+                }
+            }
+        }
+
+        private void SyncEffectParameters()
+        {
+            if (outlineEffect == null) return;
+            float safeThickness = thickness >= 0.1f ? thickness : 1.0f;
+            float safeDepthMultiplier = depthMultiplier >= 0.1f ? depthMultiplier : 2.0f;
+            float safeDepthBias = depthBias >= 0.5f ? depthBias : 10.0f;
+            float safeNormalMultiplier = normalMultiplier >= 0.1f ? normalMultiplier : 1.0f;
+            float safeNormalBias = normalBias >= 0.5f ? normalBias : 10.0f;
+            float safeMaxDistance = maxDistance >= 1.0f ? maxDistance : 45.0f;
+            float safeDistanceFade = distanceFade >= 0.1f ? distanceFade : 15.0f;
+            float safeMaxOrthoSize = maxOrthoSize >= 1.0f ? maxOrthoSize : 45.0f;
+            float safeOrthoSizeFade = orthoSizeFade >= 0.1f ? orthoSizeFade : 15.0f;
+
+            outlineEffect.thickness.Override(safeThickness);
+            outlineEffect.depthMultiplier.Override(safeDepthMultiplier);
+            outlineEffect.depthBias.Override(safeDepthBias);
+            outlineEffect.normalMultiplier.Override(safeNormalMultiplier);
+            outlineEffect.normalBias.Override(safeNormalBias);
+            outlineEffect.maxDistance.Override(safeMaxDistance);
+            outlineEffect.distanceFade.Override(safeDistanceFade);
+            outlineEffect.maxOrthoSize.Override(safeMaxOrthoSize);
+            outlineEffect.orthoSizeFade.Override(safeOrthoSizeFade);
+            outlineEffect.color.Override(outlineColor);
         }
 
         /// <summary>
@@ -98,7 +140,7 @@ namespace OTA.Corridor.Overlays
                 {
                     layer = cam.gameObject.AddComponent<PostProcessLayer>();
                     layer.volumeTrigger = cam.transform;
-                    layer.volumeLayer = LayerMask.GetMask("Default");
+                    layer.volumeLayer = LayerMask.GetMask("Default", "Post");
                 }
                 layer.enabled = outlineEnabled;
             }
@@ -129,12 +171,7 @@ namespace OTA.Corridor.Overlays
                 {
                     outlineEffect = ScriptableObject.CreateInstance<SobelOutline>();
                     outlineEffect.enabled.Override(outlineEnabled);
-                    outlineEffect.thickness.Override(thickness);
-                    outlineEffect.depthMultiplier.Override(depthMultiplier);
-                    outlineEffect.depthBias.Override(depthBias);
-                    outlineEffect.normalMultiplier.Override(normalMultiplier);
-                    outlineEffect.normalBias.Override(normalBias);
-                    outlineEffect.color.Override(outlineColor);
+                    SyncEffectParameters();
 
                     volume = PostProcessManager.instance.QuickVolume(gameObject.layer, 100f, outlineEffect);
                     isQuickVolume = true;
@@ -153,12 +190,7 @@ namespace OTA.Corridor.Overlays
 
             if (outlineEffect != null)
             {
-                outlineEffect.thickness.Override(thickness);
-                outlineEffect.depthMultiplier.Override(depthMultiplier);
-                outlineEffect.depthBias.Override(depthBias);
-                outlineEffect.normalMultiplier.Override(normalMultiplier);
-                outlineEffect.normalBias.Override(normalBias);
-                outlineEffect.color.Override(outlineColor);
+                SyncEffectParameters();
             }
         }
 

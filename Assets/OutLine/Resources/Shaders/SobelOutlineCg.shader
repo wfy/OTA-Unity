@@ -24,6 +24,10 @@ Shader "VertexFragment/SobelOutlineCg"
             float _OutlineNormalMultiplier;
             float _OutlineNormalBias;
             float _OutlineDensity;
+            float _OutlineMaxDistance;
+            float _OutlineDistanceFade;
+            float _OutlineMaxOrthoSize;
+            float _OutlineOrthoSizeFade;
             float4 _OutlineColor;
 
             struct VertData
@@ -114,22 +118,54 @@ Shader "VertexFragment/SobelOutlineCg"
                 }
 
                 // -------------------------------------------------------------------------
-                // Fade out the outline for distant objects.
+                // Fade out the outline for distant objects & background culling.
                 // -------------------------------------------------------------------------
 
-                // Generate an alpha value based on scene depth.
-                //     >= 0.4 = No outline
-                //      > 0.2 = Partial outline
-                //     <= 0.2 = Full outline
+                float rawDepth = tex2D(_CameraDepthTexture, input.texcoord.xy).r;
 
-                float depth01   = Linear01Depth(tex2D(_CameraDepthTexture, input.texcoord.xy).r);
-                if(depth01 > 0.015)
+                // 1. 空背景直接剔除，彻底杜绝在天空/无几何体区域产生黑晕
+                #if defined(UNITY_REVERSED_Z)
+                if (rawDepth <= 0.00001f) return float4(sceneColor, 1.0);
+                #else
+                if (rawDepth >= 0.99999f) return float4(sceneColor, 1.0);
+                #endif
+
+                // 2. 根据相机模式区分控制：透视模式用绝对米数，正交模式用 orthographicSize
+                bool isOrtho = (unity_OrthoParams.w > 0.5);
+                float alpha = 1.0;
+
+                if (isOrtho)
                 {
-                    return float4(sceneColor, 1.0);
+                    float currentOrthoSize = unity_OrthoParams.y * 0.5;
+                    float maxOrtho = _OutlineMaxOrthoSize > 0.0 ? _OutlineMaxOrthoSize : 45.0;
+                    float fadeOrtho = _OutlineOrthoSizeFade > 0.0 ? _OutlineOrthoSizeFade : 15.0;
+                    float startFadeOrtho = max(0.1, maxOrtho - fadeOrtho);
+
+                    if (currentOrthoSize > maxOrtho)
+                    {
+                        return float4(sceneColor, 1.0);
+                    }
+                    else if (currentOrthoSize > startFadeOrtho)
+                    {
+                        alpha = 1.0 - saturate((currentOrthoSize - startFadeOrtho) / fadeOrtho);
+                    }
                 }
-                float minDepth  = 0.2;
-                float depthSpan = 0.2;
-                float alpha     = lerp(1.0, 0.0, (clamp(depth01, minDepth, minDepth + depthSpan) - minDepth) / depthSpan);
+                else
+                {
+                    float eyeDepth = LinearEyeDepth(rawDepth);
+                    float maxDist = _OutlineMaxDistance > 0.0 ? _OutlineMaxDistance : 45.0;
+                    float fadeDist = _OutlineDistanceFade > 0.0 ? _OutlineDistanceFade : 15.0;
+                    float startFadeDist = max(0.1, maxDist - fadeDist);
+
+                    if (eyeDepth > maxDist)
+                    {
+                        return float4(sceneColor, 1.0);
+                    }
+                    else if (eyeDepth > startFadeDist)
+                    {
+                        alpha = 1.0 - saturate((eyeDepth - startFadeDist) / fadeDist);
+                    }
+                }
 
                 if (alpha <= 0.0)
                 {
@@ -156,7 +192,7 @@ Shader "VertexFragment/SobelOutlineCg"
 
                 // Colorize the outline
                 float3 outlineColor = lerp(sceneColor, _OutlineColor.rgb, clamp(_OutlineColor.a, 0.0f, 1.0f));
-                color = lerp(sceneColor, outlineColor, sobelOutline * saturate(1- (depth01 - 0.01) / 0.004));
+                color = lerp(sceneColor, outlineColor, sobelOutline);
 
                 return float4(color, 1.0);
             }

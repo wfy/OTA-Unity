@@ -21,6 +21,18 @@ namespace VertexFragment
         [Tooltip("Bias of the Normal-Component of the Sobel Outline")]
         public FloatParameter normalBias = new FloatParameter { value = 10.0f };
 
+        [Tooltip("Max distance in meters for outline in perspective mode")]
+        public FloatParameter maxDistance = new FloatParameter { value = 45.0f };
+
+        [Tooltip("Fade distance in meters for outline in perspective mode")]
+        public FloatParameter distanceFade = new FloatParameter { value = 15.0f };
+
+        [Tooltip("Max orthographic size for outline in orthographic mode")]
+        public FloatParameter maxOrthoSize = new FloatParameter { value = 45.0f };
+
+        [Tooltip("Fade size for outline in orthographic mode")]
+        public FloatParameter orthoSizeFade = new FloatParameter { value = 15.0f };
+
         [Tooltip("Color of the Sobel Outline")]
         public ColorParameter color = new ColorParameter { value = Color.black };
     }
@@ -52,6 +64,10 @@ namespace VertexFragment
             sheet.properties.SetFloat("_OutlineDepthBias", settings.depthBias);
             sheet.properties.SetFloat("_OutlineNormalMultiplier", settings.normalMultiplier);
             sheet.properties.SetFloat("_OutlineNormalBias", settings.normalBias);
+            sheet.properties.SetFloat("_OutlineMaxDistance", settings.maxDistance);
+            sheet.properties.SetFloat("_OutlineDistanceFade", settings.distanceFade);
+            sheet.properties.SetFloat("_OutlineMaxOrthoSize", settings.maxOrthoSize);
+            sheet.properties.SetFloat("_OutlineOrthoSizeFade", settings.orthoSizeFade);
             sheet.properties.SetColor("_OutlineColor", settings.color);
 
             context.command.BlitFullscreenTriangle(context.source, context.destination, sheet, 0);

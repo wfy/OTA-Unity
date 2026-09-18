@@ -1112,43 +1112,87 @@ namespace PointCloudRuntimeViewer
 
         public void InitDX11Buffers()
         {
-            // EnsureCloudMaterial();
-            if (totalPoints == 0)
+            if (points == null)
+            {
+                totalPoints = 0;
+            }
+            else if (points.Length > 0)
+            {
+                totalPoints = points.Length;
+            }
+            else if (totalPoints == 0)
             {
                 totalPoints = 1;
                 points = new Vector3[1];
                 pointColors = new Vector4[1];
             }
 
-            if (useDX11 == true) ReleaseDX11Buffers();
+            if (currentRenderMode == RenderMode.Mesh)
+            {
+                // 1. Mesh 模式：彻底释放并清理 DX11 ComputeBuffers，防止显存冗余与 Procedural 冲突
+                ReleaseDX11Buffers();
 
-            if (bufferPoints != null) bufferPoints.Dispose();
-            bufferPoints = new ComputeBuffer(totalPoints, 12);
-            bufferPoints.SetData(points);
-            if (cloudMaterial != null)
-            {
-                cloudMaterial.SetBuffer("buf_Points", bufferPoints);
-                cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
-            }
+                // 2. 统一将 cloudMaterial 指针重定向为 Mesh 模式材质 (Unlit/WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new)
+                EnsureMeshMaterial();
+                if (meshMaterial != null)
+                {
+                    cloudMaterial = meshMaterial;
+                }
 
-            // Ensure bufferColors is ALWAYS populated and bound to buf_Colors
-            if (pointColors == null || pointColors.Length < totalPoints)
-            {
-                pointColors = new Vector4[totalPoints];
-                for (int i = 0; i < totalPoints; i++) pointColors[i] = Vector4.one;
-            }
-            if (bufferColors != null) bufferColors.Dispose();
-            bufferColors = new ComputeBuffer(totalPoints, 16);
-            bufferColors.SetData(pointColors);
-            if (cloudMaterial != null)
-            {
-                cloudMaterial.SetBuffer("buf_Colors", bufferColors);
-            }
+                // 3. 构建/更新 MeshFilter 顶点数据与拓扑 (MeshTopology.Points)
+                EnsureMeshGeometryAndColors();
 
-            if (forceDepthBufferPass == true && depthMaterial != null)
+                // 4. 将 cloudMaterial 赋给 MeshRenderer 并启用
+                if (_mr != null)
+                {
+                    _mr.sharedMaterial = cloudMaterial;
+                    _mr.receiveShadows = false;
+                    _mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                    _mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+                    _mr.enabled = true;
+                }
+            }
+            else
             {
-                depthMaterial.SetBuffer("buf_Points", bufferPoints);
-                depthMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+                // Point 原生点云模式
+                if (_mr != null && _mr.enabled)
+                {
+                    _mr.enabled = false;
+                }
+
+                EnsureCloudMaterial();
+
+                if (useDX11 == true) ReleaseDX11Buffers();
+
+                if (bufferPoints != null) bufferPoints.Dispose();
+                bufferPoints = new ComputeBuffer(totalPoints, 12);
+                bufferPoints.SetData(points);
+                if (cloudMaterial != null)
+                {
+                    cloudMaterial.SetBuffer("buf_Points", bufferPoints);
+                    cloudMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+                }
+
+                // Ensure bufferColors is ALWAYS populated and bound to buf_Colors
+                if (pointColors == null || pointColors.Length < totalPoints)
+                {
+                    pointColors = new Vector4[totalPoints];
+                    for (int i = 0; i < totalPoints; i++) pointColors[i] = Vector4.one;
+                }
+                if (bufferColors != null) bufferColors.Dispose();
+                bufferColors = new ComputeBuffer(totalPoints, 16);
+                bufferColors.SetData(pointColors);
+                if (cloudMaterial != null)
+                {
+                    cloudMaterial.SetBuffer("buf_Colors", bufferColors);
+                }
+
+                if (forceDepthBufferPass == true && depthMaterial != null)
+                {
+                    depthMaterial.SetBuffer("buf_Points", bufferPoints);
+                    depthMaterial.SetMatrix("_modelMatrix", transform.localToWorldMatrix);
+                }
             }
         }
 
@@ -1715,37 +1759,8 @@ namespace PointCloudRuntimeViewer
             currentRenderMode = mode;
             isLoading = false;
 
-            EnsureMeshAndRenderers();
-
-            if (mode == RenderMode.Mesh)
-            {
-                // 开启线框模式：使用 Unity Mesh 拓扑 + MeshRenderer + WillshareCesiumUnlitTilesetShader_PointCloudAutoSize_new
-                EnsureMeshGeometryAndColors();
-                EnsureMeshMaterial();
-
-                if (meshMaterial != null)
-                {
-                    _mr.sharedMaterial = meshMaterial;
-                }
-
-                _mr.enabled = true;
-                _mr.receiveShadows = false;
-                _mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                _mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
-                _mr.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-
-                UpdateOutlineState(true);
-            }
-            else
-            {
-                // 关闭线框模式（Point 原生点云）：100% 对齐 3dTrack 真实效果（图2样式）
-                // 1px 硬件原生点基元，铁塔晶格精细纤巧、树木细腻自然、导线纤细真实
-                if (_mr != null && _mr.enabled) _mr.enabled = false;
-                UpdateOutlineState(false);
-
-                EnsureCloudMaterial();
-                InitDX11Buffers();
-            }
+            UpdateOutlineState(mode == RenderMode.Mesh);
+            InitDX11Buffers();
         }
 
         private void UpdateOutlineState(bool enable)
@@ -1758,29 +1773,27 @@ namespace PointCloudRuntimeViewer
                 {
                     layer.enabled = enable;
                 }
-                // var controller = targetCam.GetComponent<OTA.Corridor.Overlays.SobelOutlineController>();
-                // if (controller == null) controller = FindObjectOfType<OTA.Corridor.Overlays.SobelOutlineController>();
-                // if (controller == null && enable) controller = targetCam.gameObject.AddComponent<OTA.Corridor.Overlays.SobelOutlineController>();
-                // if (controller != null)
-                // {
-                //     controller.outlineEnabled = enable;
-                //     controller.ApplyOutlineState();
-                // }
+                var controller = targetCam.GetComponent<OTA.Corridor.Overlays.SobelOutlineController>();
+                if (controller == null) controller = FindObjectOfType<OTA.Corridor.Overlays.SobelOutlineController>();
+                if (controller != null)
+                {
+                    controller.enabled = enable;
+                    controller.outlineEnabled = enable;
+                    controller.ApplyOutlineState();
+                }
             }
 
-            // If disabling outline, ensure all PostProcessLayers and Volumes across scene are strictly silenced to prevent Depth/Normals pre-passes
-            if (!enable)
+            // 同步场景中所有 PostProcessLayer 与 PostProcessVolume 的启用状态与权重（开启时 weight=1f，关闭时 weight=0f 消除开销）
+            var allLayers = FindObjectsOfType<UnityEngine.Rendering.PostProcessing.PostProcessLayer>();
+            for (int i = 0; i < allLayers.Length; i++)
             {
-                var allLayers = FindObjectsOfType<UnityEngine.Rendering.PostProcessing.PostProcessLayer>();
-                for (int i = 0; i < allLayers.Length; i++)
-                {
-                    if (allLayers[i] != null) allLayers[i].enabled = false;
-                }
-                var allVolumes = FindObjectsOfType<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
-                for (int i = 0; i < allVolumes.Length; i++)
-                {
-                    if (allVolumes[i] != null) allVolumes[i].weight = 0f;
-                }
+                if (allLayers[i] != null) allLayers[i].enabled = enable;
+            }
+
+            var allVolumes = FindObjectsOfType<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
+            for (int i = 0; i < allVolumes.Length; i++)
+            {
+                if (allVolumes[i] != null) allVolumes[i].weight = enable ? 1f : 0f;
             }
         }
 
@@ -1796,37 +1809,42 @@ namespace PointCloudRuntimeViewer
             pointColors = cols;
             readRGB = true;
 
-            // 1. 更新 Point 模式下的 ComputeBuffer
-            if (bufferColors != null && bufferColors.count == cols.Length)
+            if (currentRenderMode == RenderMode.Mesh)
             {
-                bufferColors.SetData(cols);
+                // Mesh 模式：仅更新 Mesh 顶点颜色，严禁创建 ComputeBuffer 污染显存
+                if (_mf != null && _mf.sharedMesh != null && _mf.sharedMesh.vertexCount == cols.Length)
+                {
+                    Color32[] cCols = new Color32[cols.Length];
+                    for (int i = 0; i < cols.Length; i++)
+                    {
+                        Vector4 c = cols[i];
+                        cCols[i] = new Color32(
+                            (byte)(Mathf.Clamp01(c.x) * 255f),
+                            (byte)(Mathf.Clamp01(c.y) * 255f),
+                            (byte)(Mathf.Clamp01(c.z) * 255f),
+                            (byte)(Mathf.Clamp01(c.w) * 255f)
+                        );
+                    }
+                    _mf.sharedMesh.colors32 = cCols;
+                }
             }
             else
             {
-                totalPoints = cols.Length;
-                InitDX11Buffers();
-            }
-
-            if (cloudMaterial != null && bufferColors != null)
-            {
-                cloudMaterial.SetBuffer("buf_Colors", bufferColors);
-            }
-
-            // 2. 更新 Mesh 模式下的 Mesh 顶点颜色
-            if (_mf != null && _mf.sharedMesh != null && _mf.sharedMesh.vertexCount == cols.Length)
-            {
-                Color32[] cCols = new Color32[cols.Length];
-                for (int i = 0; i < cols.Length; i++)
+                // Point 模式：更新 ComputeBuffer
+                if (bufferColors != null && bufferColors.count == cols.Length)
                 {
-                    Vector4 c = cols[i];
-                    cCols[i] = new Color32(
-                        (byte)(Mathf.Clamp01(c.x) * 255f),
-                        (byte)(Mathf.Clamp01(c.y) * 255f),
-                        (byte)(Mathf.Clamp01(c.z) * 255f),
-                        (byte)(Mathf.Clamp01(c.w) * 255f)
-                    );
+                    bufferColors.SetData(cols);
                 }
-                _mf.sharedMesh.colors32 = cCols;
+                else
+                {
+                    totalPoints = cols.Length;
+                    InitDX11Buffers();
+                }
+
+                if (cloudMaterial != null && bufferColors != null)
+                {
+                    cloudMaterial.SetBuffer("buf_Colors", bufferColors);
+                }
             }
         }
 

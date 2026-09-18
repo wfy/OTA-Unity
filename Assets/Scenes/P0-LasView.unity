@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: 100002}
   - component: {fileID: 100003}
   - component: {fileID: 100004}
-  - component: {fileID: 100005}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: RightPointCloud
@@ -280,25 +279,6 @@ MonoBehaviour:
   - assemblyQualifiedName: VertexFragment.SobelOutline, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_AfterStackBundles: []
---- !u!114 &100005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08c4bf1ad60913b43aa9e0b978ca9fa4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineEnabled: 0
-  thickness: 2
-  depthMultiplier: 0
-  depthBias: 0
-  normalMultiplier: 0
-  normalBias: 0
-  outlineColor: {r: 0, g: 0, b: 0, a: 0.85}
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -440,7 +420,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fullPath: 
   loadAtStart: 0
-  cloudMaterial: {fileID: 2100000, guid: d2f6e8b9a0c1432eb74189b0d3e2f456, type: 2}
+  cloudMaterial: {fileID: 2100000, guid: 6c14ee25a48f37243ac91f1cacd8bcb7, type: 2}
   useDX11: 1
   meshMaterial: {fileID: 2100000, guid: 78c038bb125c6054db8d80c39791c25c, type: 2}
   currentRenderMode: 0
@@ -487,7 +467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ead011436a6a9dc498b6c74debf28506, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lasPath: "E:/unity/\u70B9\u4E91/17-18(17_18).las"
+  lasPath: 
   threaded: 1
   autoLoadOnStart: 0
 --- !u!114 &300004
