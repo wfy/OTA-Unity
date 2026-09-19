@@ -54,6 +54,30 @@ namespace Metervara.Interaction
         {
             base.Awake();
             Instance = this;
+            EnsureAimIndicatorVisual();
+        }
+
+        private void EnsureAimIndicatorVisual()
+        {
+            if (aimIndicator == null) return;
+            var img = aimIndicator.GetComponent<UnityEngine.UI.Image>();
+            var txt = aimIndicator.GetComponent<UnityEngine.UI.Text>();
+            if (txt != null && img == null)
+            {
+                Destroy(txt);
+                img = aimIndicator.gameObject.AddComponent<UnityEngine.UI.Image>();
+            }
+            if (img != null)
+            {
+                if (img.sprite == null)
+                {
+                    img.sprite = Resources.Load<Sprite>("UI/aim_indicator_marker");
+                }
+                img.color = new Color(1f, 0f, 0f, 1f);
+                img.raycastTarget = false;
+                img.preserveAspect = true;
+            }
+            aimIndicator.sizeDelta = new Vector2(46f, 46f);
         }
 
                 public void FocusOnBounds(Bounds b)

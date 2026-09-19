@@ -159,15 +159,15 @@ namespace OTA.Corridor.UI
             "低矮植被 (Low Veg)", "中层植被 (Med Veg)", "高大树木 (High Veg)", "建筑物 (Buildings)", "未分类 (Unclass)"
         };
         private readonly Color[] asprsClassColors = new Color[] {
-            new Color(1f, 0.88f, 0.2f),
-            new Color(1f, 0.42f, 0.15f),
-            new Color(0.82f, 0.26f, 1f),
-            new Color(0.6f, 0.4f, 0.2f),
-            new Color(0.2f, 0.8f, 0.2f),
-            new Color(0.15f, 0.65f, 0.15f),
-            new Color(0.1f, 0.5f, 0.1f),
-            new Color(0.95f, 0.3f, 0.3f),
-            new Color(0.65f, 0.65f, 0.65f)
+            new Color(0.18f, 0.55f, 1.00f, 1f), // 15 杆塔: 蓝色
+            new Color(1.00f, 0.50f, 0.00f, 1f), // 14 导线: 橙色
+            new Color(0.00f, 0.88f, 0.95f, 1f), // 16 绝缘子: 青色
+            new Color(0.63f, 0.45f, 0.28f, 1f), // 2  地面: 不变
+            new Color(0.47f, 0.78f, 0.31f, 1f), // 3  低矮植被: 原色 (自然草绿)
+            new Color(0.20f, 0.63f, 0.20f, 1f), // 4  中层植被: 原色 (中度绿)
+            new Color(0.10f, 0.55f, 0.15f, 1f), // 5  高大树木: 原色 (林木深绿)
+            new Color(0.24f, 0.39f, 0.86f, 1f), // 6  建筑物: 不变
+            new Color(0.60f, 0.60f, 0.60f, 1f)  // 1  未分类: 不变
         };
 
         private int selectedZoneIdx = 1; // default Zone II (典型气象区 II 区 无冰常规)
@@ -2505,7 +2505,7 @@ namespace OTA.Corridor.UI
                 bool isVis = (colorManager != null) ? colorManager.IsClassVisible(cid) : true;
 
                 GUILayout.BeginHorizontal(GUI.skin.box);
-                GUI.color = asprsClassColors[i];
+                GUI.color = (colorManager != null) ? colorManager.GetClassMeta(cid).color : asprsClassColors[i];
                 GUILayout.Label("■", GUILayout.Width(14));
                 GUI.color = Color.white;
 

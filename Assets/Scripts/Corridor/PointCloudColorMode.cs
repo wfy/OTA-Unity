@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,7 +49,7 @@ namespace OTA.Corridor
             { 2,  new ClassMeta(2,  "地面 (Ground)",          new Color(0.63f, 0.45f, 0.28f, 1f)) },
             { 3,  new ClassMeta(3,  "低植被 (Low Veg)",       new Color(0.47f, 0.78f, 0.31f, 1f)) },
             { 4,  new ClassMeta(4,  "中植被 (Med Veg)",       new Color(0.20f, 0.63f, 0.20f, 1f)) },
-            { 5,  new ClassMeta(5,  "高植被/树木 (High Veg)", new Color(0.00f, 0.85f, 0.00f, 1f)) },
+            { 5,  new ClassMeta(5,  "高植被/树木 (High Veg)", new Color(0.10f, 0.55f, 0.15f, 1f)) },
             { 6,  new ClassMeta(6,  "建筑物 (Building)",      new Color(0.24f, 0.39f, 0.86f, 1f)) },
             { 7,  new ClassMeta(7,  "低噪点 (Low Noise)",     new Color(1.00f, 0.39f, 0.39f, 1f)) },
             { 8,  new ClassMeta(8,  "特征点 (Key-point)",     new Color(0.85f, 0.85f, 0.20f, 1f)) },
@@ -57,9 +57,9 @@ namespace OTA.Corridor
             { 10, new ClassMeta(10, "铁路 (Rail)",            new Color(0.55f, 0.31f, 0.55f, 1f)) },
             { 11, new ClassMeta(11, "道路 (Road)",            new Color(0.35f, 0.35f, 0.35f, 1f)) },
             { 13, new ClassMeta(13, "地线 (Guard Wire)",      new Color(0.95f, 0.88f, 0.30f, 1f)) },
-            { 14, new ClassMeta(14, "导线 (Conductor)",       new Color(1.00f, 0.48f, 0.00f, 1f)) },
-            { 15, new ClassMeta(15, "杆塔 (Tower)",           new Color(1.00f, 0.78f, 0.00f, 1f)) },
-            { 16, new ClassMeta(16, "绝缘子 (Insulator)",     new Color(0.85f, 0.25f, 0.95f, 1f)) },
+            { 14, new ClassMeta(14, "导线 (Conductor)",       new Color(1.00f, 0.50f, 0.00f, 1f)) },
+            { 15, new ClassMeta(15, "杆塔 (Tower)",           new Color(0.18f, 0.55f, 1.00f, 1f)) },
+            { 16, new ClassMeta(16, "绝缘子 (Insulator)",     new Color(0.00f, 0.88f, 0.95f, 1f)) },
             { 17, new ClassMeta(17, "桥梁 (Bridge)",          new Color(0.31f, 0.63f, 0.71f, 1f)) },
             { 18, new ClassMeta(18, "高处噪点 (High Noise)",  new Color(1.00f, 0.00f, 0.50f, 1f)) },
             { 20, new ClassMeta(20, "边坡树 (Slope Tree)",    new Color(0.00f, 0.90f, 0.90f, 1f)) },

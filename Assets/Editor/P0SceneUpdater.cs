@@ -112,12 +112,24 @@ namespace OTA.EditorTools
             hud.overlayManager = overlayMgr;
             hud.importer = importer;
 
-            // 4. Clean up outdated P1 scene if present
-            string oldP1 = "Assets/Scenes/P1-CorridorView.unity";
-            if (File.Exists(oldP1))
+            // 5. Ensure AimIndicator is red bold circular marker
+            var aimGo = GameObject.Find("AimIndicator");
+            if (aimGo != null)
             {
-                AssetDatabase.DeleteAsset(oldP1);
-                Debug.Log("[P0SceneUpdater] Removed legacy redundant P1-CorridorView.unity");
+                var txt = aimGo.GetComponent<UnityEngine.UI.Text>();
+                if (txt != null) Object.DestroyImmediate(txt);
+
+                var img = aimGo.GetComponent<UnityEngine.UI.Image>();
+                if (img == null) img = aimGo.AddComponent<UnityEngine.UI.Image>();
+
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/PointCloudTools/Textures/UI/aim_indicator_marker.png");
+                if (sprite != null) img.sprite = sprite;
+                img.color = new Color(1f, 0f, 0f, 1f);
+                img.raycastTarget = false;
+                img.preserveAspect = true;
+
+                var rt = aimGo.GetComponent<RectTransform>();
+                if (rt != null) rt.sizeDelta = new Vector2(46f, 46f);
             }
 
             EditorSceneManager.SaveScene(scene, scenePath);
